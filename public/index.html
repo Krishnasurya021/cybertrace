@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CyberTrace — Universal Authentication Security & Access Monitoring Platform</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+</head>
+<body>
+
+  <!-- ========================================================================
+       FLOATING DEMO CENTER CONTROLLER (Present across all views)
+       ======================================================================== -->
+  <div class="demo-controller-bar" id="demoControllerBar">
+    <div class="demo-badge">
+      <span class="pulse-dot" id="liveSimIndicatorDot" style="background:#10b981;"></span>
+      <span id="liveSimStatusText">DEMO CENTER</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+      <button class="demo-btn demo-btn-safe" id="btnSimSafe" title="Simulate john123 normal login (Risk: 5/100, LOW, SAFE)">
+        🟢 SAFE LOGIN
+      </button>
+      <button class="demo-btn demo-btn-wrong" id="btnSimWrong" title="Simulate john123 wrong password (Risk: 15/100, LOW, MONITORING)">
+        🟡 WRONG PASSWORD
+      </button>
+      <button class="demo-btn demo-btn-unknown" id="btnSimUnknown" title="Simulate fake_admin_123 unknown account (Risk: 15/100, LOW, MONITORING)">
+        🟡 UNKNOWN USER
+      </button>
+      <button class="demo-btn demo-btn-burst" id="btnSimBurst" title="Simulate 5 repeated failed attempts (Risk: 65/100, HIGH, ALERT)">
+        🟠 REPEATED FAILURES
+      </button>
+      <button class="demo-btn demo-btn-critical" id="btnSimMulti" title="Simulate 7 probed accounts: admin, root, superadmin... (Risk: 88/100, CRITICAL)">
+        🔴 MULTIPLE USERNAMES
+      </button>
+      <button class="demo-btn demo-btn-critical" id="btnSimHighFreq" title="Simulate 20 rapid automated requests (Risk: 75+/100, CRITICAL)">
+        ⚡ VELOCITY SPIKE
+      </button>
+      <button class="demo-btn demo-btn-critical" id="btnSimTakeover" title="Simulate 4 failures followed by SUCCESS on /finance (Takeover Risk: 85+/100)">
+        🎯 TAKEOVER
+      </button>
+
+      <span style="color:rgba(255,255,255,0.2); font-size:12px; margin:0 4px;">|</span>
+
+      <button class="demo-btn" id="btnToggleLiveSim" style="background:rgba(16,185,129,0.15); border-color:#10b981; color:#34d399;" title="Toggle continuous live background telemetry generator">
+        ▶ Start Live Sim
+      </button>
+      <button class="demo-btn" id="btnClearDemoData" style="background:rgba(239,68,68,0.15); border-color:#ef4444; color:#f87171;" title="Clear demo telemetry and reset counts to zero">
+        🗑️ Clear
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       SCREEN 1: 3D CYBERSECURITY LOGIN EXPERIENCE
+       ======================================================================== -->
+  <div class="login-screen-overlay" id="loginScreenOverlay">
+    <canvas id="loginCyberCanvas" class="cyber-canvas-bg"></canvas>
+
+    <div class="login-container-3d">
+      <!-- 3D Rotating Security Shield & Laser Scanner -->
+      <div class="shield-perspective-rig">
+        <div class="shield-3d-model">
+          <svg class="shield-svg-graphic" viewBox="0 0 100 120">
+            <defs>
+              <linearGradient id="shieldCyberGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#00f2fe" />
+                <stop offset="50%" stop-color="#3b82f6" />
+                <stop offset="100%" stop-color="#0f172a" />
+              </linearGradient>
+            </defs>
+            <path d="M 50 10 Q 75 10 88 25 Q 90 70 50 110 Q 10 70 12 25 Q 25 10 50 10 Z" fill="url(#shieldCyberGrad)" stroke="#00f2fe" stroke-width="1.5"/>
+            <path d="M 50 20 Q 70 20 80 32 Q 82 68 50 100 Q 18 68 20 32 Q 30 20 50 20 Z" fill="none" stroke="rgba(0, 242, 254, 0.4)" stroke-width="1.5"/>
+            <circle cx="50" cy="55" r="14" fill="none" stroke="#38bdf8" stroke-width="2" stroke-dasharray="4 2"/>
+            <path d="M 44 55 L 48 59 L 57 48" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="scanning-laser-beam"></div>
+      </div>
+
+      <!-- Login Form Card -->
+      <div class="login-glass-box">
+        <div class="login-brand-head">
+          <h2>CyberTrace</h2>
+          <p>UNIVERSAL AUTHENTICATION SECURITY PLATFORM</p>
+        </div>
+
+        <div class="security-policy-disclaimer">
+          <span>🛡️</span>
+          <span><b>SECURITY NOTE:</b> This console is for CyberTrace SOC analysts only. CyberTrace does NOT authenticate external website users or store third-party passwords.</span>
+        </div>
+
+        <form id="sentinelLoginForm" onsubmit="return false;">
+          <div class="form-field">
+            <label for="loginUsername">ANALYST IDENTITY / USERNAME</label>
+            <div class="input-with-icon">
+              <span class="field-icon">👤</span>
+              <input type="text" id="loginUsername" value="analyst" required autocomplete="off">
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label for="loginKey">SECURITY PASSKEY / TOKEN</label>
+            <div class="input-with-icon">
+              <span class="field-icon">🔒</span>
+              <input type="password" id="loginKey" value="••••••••" required>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-login-submit" id="btnLoginSubmit">
+            INITIALIZE SECURITY CENTER ➔
+          </button>
+        </form>
+
+        <div class="login-stage-progress" id="loginProgressStatus"></div>
+
+        <div style="text-align:center; margin-top:14px;">
+          <button id="btnBypassLogin" style="background:transparent; border:none; color:var(--text-muted); font-size:11px; cursor:pointer; text-decoration:underline;">
+            Skip directly to SOC Dashboard (Demo Mode)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MAIN APPLICATION LAYOUT (SOC DASHBOARD & WORKBENCH)
+       ======================================================================== -->
+  <div class="app-layout">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="brand-icon">🛡️</div>
+        <div class="brand-info">
+          <h1>CyberTrace</h1>
+          <div class="brand-tag">AUTH SECURITY SOC</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-category">OPERATIONS</div>
+        <a href="#" class="nav-link active" data-view="dashboard">
+          <span class="nav-icon">📊</span>
+          <span>SOC Dashboard</span>
+        </a>
+        <a href="#" class="nav-link" data-view="live-logs">
+          <span class="nav-icon">⚡</span>
+          <span>Live Monitor</span>
+        </a>
+        <a href="#" class="nav-link" data-view="alerts">
+          <span class="nav-icon">🚨</span>
+          <span>Security Alerts</span>
+          <span class="nav-badge" id="navAlertBadge">0</span>
+        </a>
+        <a href="#" class="nav-link" data-view="investigation">
+          <span class="nav-icon">🔍</span>
+          <span>Investigation</span>
+        </a>
+
+        <div class="nav-category">SECURITY INTELLIGENCE</div>
+        <a href="#" class="nav-link" data-view="source-analysis">
+          <span class="nav-icon">🌐</span>
+          <span>Source &amp; IP Analysis</span>
+        </a>
+        <a href="#" class="nav-link" data-view="access-graph">
+          <span class="nav-icon">🕸️</span>
+          <span>ADSA Access Graph</span>
+        </a>
+        <a href="#" class="nav-link" data-view="entity-analysis">
+          <span class="nav-icon">🎯</span>
+          <span>Entity Deep Dive</span>
+        </a>
+        <a href="#" class="nav-link" data-view="statistical">
+          <span class="nav-icon">📈</span>
+          <span>Statistical Lab</span>
+        </a>
+        <a href="#" class="nav-link" data-view="rules">
+          <span class="nav-icon">⚙️</span>
+          <span>Risk Engine Rules</span>
+        </a>
+
+        <div class="nav-category">INTEGRATION &amp; DEMO</div>
+        <a href="#" class="nav-link" data-view="applications">
+          <span class="nav-icon">🏢</span>
+          <span>Connected Apps</span>
+        </a>
+        <a href="#" class="nav-link" data-view="integration">
+          <span class="nav-icon">🔌</span>
+          <span>Connect Your App</span>
+        </a>
+        <a href="#" class="nav-link" data-view="demo-center">
+          <span class="nav-icon">🎮</span>
+          <span>Demo Center &amp; Settings</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="role-pill" id="currentRoleBadge">ROLE: SECURITY ADMIN</div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+          <span style="font-size:11px; color:#64748b;">Zero-Trust IAM Active</span>
+          <button id="btnLogout" style="background:transparent; border:none; color:#f87171; font-size:11px; cursor:pointer; text-decoration:underline;">
+            Logout
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Body -->
+    <div class="main-wrapper">
+      <!-- Top Bar -->
+      <header class="top-header">
+        <div class="header-left">
+          <div class="page-title" id="currentPageTitle">Security Operations Center (SOC) Overview</div>
+        </div>
+
+        <div class="header-controls">
+          <div class="role-pill" id="backendModeBadge" style="font-size:11px; border:1px solid rgba(16,185,129,0.3); color:#34d399;">
+            <span style="color:#10b981;">●</span> LIVE BACKEND CONNECTED
+          </div>
+
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span class="control-label">FILTER:</span>
+            <select class="app-select" id="appFilterSelect">
+              <option value="ALL">ALL APPLICATIONS (Global SOC)</option>
+            </select>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span class="control-label">PERSPECTIVE:</span>
+            <select class="role-select" id="rolePerspectiveSelect">
+              <option value="ADMIN">SECURITY ADMIN (Global)</option>
+              <option value="APP_OWNER">APPLICATION OWNER</option>
+            </select>
+          </div>
+
+          <button class="btn-header" id="btnQuickConnect">
+            <span>+</span> Connect App
+          </button>
+        </div>
+      </header>
+
+      <!-- Scrollable Views Container -->
+      <main class="content-body">
+
+        <!-- ==================================================================
+             VIEW 1: SOC DASHBOARD (Overview + Live Monitor + Charts)
+             ================================================================== -->
+        <section class="view-section active" id="view-dashboard">
+          <!-- Top KPI Cards -->
+          <div class="kpi-grid">
+            <div class="glass-panel kpi-card" style="--card-accent: #3b82f6;">
+              <span class="kpi-title">CONNECTED APPS</span>
+              <span class="kpi-value" id="kpiConnectedApps">0</span>
+              <span class="kpi-meta"><span style="color:#10b981;">●</span> Active web systems</span>
+            </div>
+
+            <div class="glass-panel kpi-card" style="--card-accent: #00f2fe;">
+              <span class="kpi-title">TOTAL EVENTS</span>
+              <span class="kpi-value" id="kpiTotalEvents">0</span>
+              <span class="kpi-meta">Ingested event metadata</span>
+            </div>
+
+            <div class="glass-panel kpi-card" style="--card-accent: #10b981;">
+              <span class="kpi-title">SUCCESSFUL</span>
+              <span class="kpi-value" id="kpiSuccessLogins" style="color:#34d399;">0</span>
+              <span class="kpi-meta"><span style="color:#10b981;">✓</span> Verified credentials</span>
+            </div>
+
+            <div class="glass-panel kpi-card" style="--card-accent: #f59e0b;">
+              <span class="kpi-title">FAILED LOGINS</span>
+              <span class="kpi-value" id="kpiFailedLogins" style="color:#fbbf24;">0</span>
+              <span class="kpi-meta">Single/transient errors</span>
+            </div>
+
+            <div class="glass-panel kpi-card" style="--card-accent: #38bdf8;">
+              <span class="kpi-title">UNKNOWN USERS</span>
+              <span class="kpi-value" id="kpiUnknownAccounts" style="color:#38bdf8;">0</span>
+              <span class="kpi-meta">Unrecognized identifiers</span>
+            </div>
+
+            <div class="glass-panel kpi-card" style="--card-accent: #f97316;">
+              <span class="kpi-title">SUSPICIOUS</span>
+              <span class="kpi-value" id="kpiSuspiciousEvents" style="color:#fb923c;">0</span>
+              <span class="kpi-meta">Medium risk anomalies</span>
+            </div>
+
+            <div class="glass-panel kpi-card" style="--card-accent: #ef4444;">
+              <span class="kpi-title">HIGH-RISK ALERTS</span>
+              <span class="kpi-value" id="kpiHighRiskAlerts" style="color:#f87171;">0</span>
+              <span class="kpi-meta"><span style="color:#ef4444;">▲</span> Action required</span>
+            </div>
+          </div>
+
+          <!-- Charts Row -->
+          <div class="charts-grid">
+            <div class="glass-panel chart-card">
+              <div class="card-header-flex">
+                <div class="card-title"><span>📈</span> Hourly Authentication Activity (24h Velocity)</div>
+                <span style="font-size:11px; color:#64748b; font-family:'JetBrains Mono';">HOURLY DISTRIBUTION</span>
+              </div>
+              <div class="svg-chart-container" id="hourlyChartContainer"></div>
+            </div>
+
+            <div class="glass-panel chart-card">
+              <div class="card-header-flex">
+                <div class="card-title"><span>🎯</span> Authentication Results Breakdown</div>
+              </div>
+              <div id="resultsDistContainer" style="margin-top:10px;"></div>
+            </div>
+          </div>
+
+          <div class="charts-grid" style="grid-template-columns: 1fr 1fr; margin-bottom:22px;">
+            <div class="glass-panel chart-card">
+              <div class="card-header-flex">
+                <div class="card-title"><span>⚖️</span> Risk Classification Spectrum</div>
+                <span style="font-size:11px; color:#64748b;">LOW • MED • HIGH • CRIT</span>
+              </div>
+              <div id="riskDistContainer" style="margin-top:10px;"></div>
+            </div>
+
+            <div class="glass-panel chart-card">
+              <div class="card-header-flex">
+                <div class="card-title"><span>👥</span> Top Targeted Account Identifiers</div>
+                <span style="font-size:11px; color:#64748b;">TOTAL ATTEMPTS</span>
+              </div>
+              <div id="topAccountsContainer" style="display:flex; flex-direction:column; gap:4px;"></div>
+            </div>
+          </div>
+
+          <!-- LIVE AUTHENTICATION MONITOR TABLE -->
+          <div class="glass-panel table-card">
+            <div class="table-controls-bar">
+              <div class="card-title">
+                <span>⚡</span> LIVE AUTHENTICATION MONITOR
+                <span class="pulse-dot" style="margin-left:6px;"></span>
+              </div>
+
+              <div class="filter-group">
+                <div class="search-input-wrap">
+                  <span class="search-icon-pos">🔍</span>
+                  <input type="text" id="liveLogSearchInput" class="search-input" placeholder="Search user, IP, app, or resource...">
+                </div>
+
+                <select id="liveLogRiskFilter" class="app-select">
+                  <option value="ALL">All Risk Levels</option>
+                  <option value="LOW">Low Risk</option>
+                  <option value="MEDIUM">Medium Risk</option>
+                  <option value="HIGH">High Risk</option>
+                  <option value="CRITICAL">Critical</option>
+                </select>
+
+                <select id="liveLogResultFilter" class="app-select">
+                  <option value="ALL">All Results</option>
+                  <option value="SUCCESS">SUCCESS</option>
+                  <option value="FAILURE">FAILURE</option>
+                  <option value="UNKNOWN_ACCOUNT">UNKNOWN_ACCOUNT</option>
+                  <option value="MFA_FAILURE">MFA_FAILURE</option>
+                </select>
+
+                <button id="btnClearLiveLogFilters" class="btn-header" style="font-size:11px; padding:4px 10px;">
+                  ✕ Clear Filters
+                </button>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="soc-table">
+                <thead>
+                  <tr>
+                    <th>TIME</th>
+                    <th>APPLICATION</th>
+                    <th>USERNAME</th>
+                    <th>RESULT</th>
+                    <th>SOURCE IP</th>
+                    <th>DEVICE</th>
+                    <th>RISK</th>
+                    <th>SCORE</th>
+                    <th>STATUS</th>
+                  </tr>
+                </thead>
+                <tbody id="liveLogsTableBody">
+                  <!-- Rendered dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================================================================
+             VIEW 2: LIVE MONITOR (Dedicated Full Screen Table)
+             ================================================================== -->
+        <section class="view-section" id="view-live-logs">
+          <div class="glass-panel table-card" style="min-height:600px;">
+            <div class="table-controls-bar">
+              <div class="card-title">
+                <span>⚡</span> Real-Time Authentication Event Stream (Full View)
+              </div>
+              <button onclick="DashboardModule.loadLiveLogs()" class="btn-header">↺ Refresh Logs</button>
+            </div>
+            <div class="table-responsive">
+              <table class="soc-table">
+                <thead>
+                  <tr>
+                    <th>TIME</th>
+                    <th>APPLICATION</th>
+                    <th>USERNAME</th>
+                    <th>RESULT</th>
+                    <th>SOURCE IP</th>
+                    <th>DEVICE</th>
+                    <th>RISK</th>
+                    <th>SCORE</th>
+                    <th>STATUS</th>
+                  </tr>
+                </thead>
+                <tbody id="fullLiveLogsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================================================================
+             VIEW 3: SECURITY ALERTS
+             ================================================================== -->
+        <section class="view-section" id="view-alerts">
+          <div class="glass-panel table-card">
+            <div class="table-controls-bar">
+              <div class="card-title"><span>🚨</span> Active Security Alerts &amp; Incidents</div>
+              <div style="display:flex; gap:10px; align-items:center;">
+                <select id="alertsStatusFilter" class="app-select">
+                  <option value="ALL">All Alert Statuses</option>
+                  <option value="OPEN">OPEN (Action Required)</option>
+                  <option value="INVESTIGATING">INVESTIGATING</option>
+                  <option value="RESOLVED">RESOLVED</option>
+                </select>
+                <button onclick="AlertsModule.loadAlerts()" class="btn-header">↺ Refresh Alerts</button>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="soc-table">
+                <thead>
+                  <tr>
+                    <th>ALERT ID</th>
+                    <th>APPLICATION</th>
+                    <th>INCIDENT TITLE</th>
+                    <th>SOURCE ORIGIN</th>
+                    <th>RISK LEVEL</th>
+                    <th>STATUS</th>
+                    <th>DETECTED AT</th>
+                    <th>ACTION</th>
+                  </tr>
+                </thead>
+                <tbody id="alertsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================================================================
+             VIEW 4: INVESTIGATION WORKBENCH
+             ================================================================== -->
+        <section class="view-section" id="view-investigation">
+          <div style="display:grid; grid-template-columns: 1.2fr 1fr; gap:16px;">
+            <div class="glass-panel" style="padding:22px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <div class="card-title"><span>🔍</span> Threat Investigation Dossier</div>
+                <span id="invAlertId" style="font-family:'JetBrains Mono'; font-weight:700; color:#f87171; font-size:14px;">#ALT-0001</span>
+              </div>
+
+              <div class="alert-details-grid" style="margin-bottom:18px;">
+                <div class="alert-field">
+                  <label>APPLICATION</label>
+                  <span id="invApp">College Portal (APP_001)</span>
+                </div>
+                <div class="alert-field">
+                  <label>THREAT SOURCE IP</label>
+                  <span id="invSourceIp" style="color:#38bdf8;">192.0.2.10</span>
+                </div>
+                <div class="alert-field">
+                  <label>RISK SEVERITY</label>
+                  <span id="invRiskLevel" style="color:#ef4444;">CRITICAL (88/100)</span>
+                </div>
+                <div class="alert-field">
+                  <label>TIMESTAMP</label>
+                  <span id="invCreatedAt">2026-09-20 10:44:13</span>
+                </div>
+              </div>
+
+              <div style="background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.3); border-radius:8px; padding:14px; margin-bottom:20px;">
+                <b style="color:#f87171; font-size:11.5px; text-transform:uppercase; display:block; margin-bottom:4px;">PATTERN DETECTED:</b>
+                <p id="invPatternDetected" style="font-size:13px; color:#fff; line-height:1.4;">
+                  Multiple account identifiers were attempted from the same source within a short period (Account Enumeration Pattern).
+                </p>
+              </div>
+
+              <div style="margin-bottom:18px;">
+                <div style="font-family:var(--font-display); font-size:13px; font-weight:700; color:#fff; margin-bottom:8px;">TRIGGERED HEURISTIC RULES:</div>
+                <div id="invTriggeredRulesContainer"></div>
+              </div>
+
+              <div style="display:flex; gap:10px;">
+                <button id="btnResolveIncident" class="btn-investigate" style="background:#10b981;">Mark Incident Resolved ✓</button>
+              </div>
+            </div>
+
+            <!-- Authentication Timeline -->
+            <div class="glass-panel" style="padding:22px;">
+              <div class="card-title" style="margin-bottom:14px;"><span>⏱️</span> Authentication Event Timeline</div>
+              <p style="font-size:11.5px; color:#94a3b8; margin-bottom:14px;">Chronological sequence of authentication requests originating from this source:</p>
+              <div id="invTimelineContainer" style="max-height:480px; overflow-y:auto;"></div>
+
+              <div style="margin-top:20px; padding-top:14px; border-top:1px solid var(--border-glass);">
+                <div style="font-size:12px; font-weight:700; color:#fff; margin-bottom:6px;">ADSA BLAST RADIUS ASSESSMENT:</div>
+                <div style="font-size:11.5px; color:#94a3b8;">
+                  Nodes Reached: <b id="invBlastNodes" style="color:#38bdf8;">0</b> |
+                  Targeted Accounts: <span id="invBlastUsers" style="color:#fff;">None</span><br/>
+                  Exposed Endpoints: <span id="invBlastResources" style="color:#fff;">None</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================================================================
+             VIEW 5: SOURCE & IP ANALYSIS (Dedicated View)
+             ================================================================== -->
+        <section class="view-section" id="view-source-analysis">
+          <div class="glass-panel table-card">
+            <div class="table-controls-bar">
+              <div style="display:flex; gap:8px;">
+                <button class="tab-btn active" id="tabSourceIp">🌐 Source IP Analysis</button>
+                <button class="tab-btn" id="tabUsername">👤 Targeted Username Analysis</button>
+              </div>
+              <div class="search-input-wrap" style="width:280px;">
+                <span class="search-icon-pos">🔍</span>
+                <input type="text" id="sourceAnalysisSearch" class="search-input" placeholder="Search IP, user, or app...">
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="soc-table">
+                <thead id="sourceAnalysisTableHead"></thead>
+                <tbody id="sourceAnalysisTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================================================================
+             VIEW 6: ADSA 5-TIER ACCESS PATTERN GRAPH
+             ================================================================== -->
+        <section class="view-section" id="view-access-graph">
+          <div class="glass-panel" style="padding:22px;">
+            <div class="table-controls-bar">
+              <div class="card-title">
+                <span>🕸️</span> ADSA 5-Tier Access Pattern Graph: <code>APPLICATION ➔ IP ➔ USER ➔ SESSION ➔ RESOURCE</code>
+              </div>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <input type="text" id="graphSearchInput" class="search-input" placeholder="Search node in graph..." style="width:180px; padding:4px 8px; font-size:11px;">
+                <button id="btnRunBFS" class="btn-header">BFS (Blast Radius)</button>
+                <button id="btnRunDFS" class="btn-header">DFS (Attack Trajectory)</button>
+              </div>
+            </div>
+
+            <div class="graph-canvas-container">
+              <canvas id="accessGraphCanvas"></canvas>
+              <div class="graph-legend">
+                <div class="legend-item"><span class="legend-dot" style="background:#3b82f6;"></span> Application</div>
+                <div class="legend-item"><span class="legend-dot" style="background:#00f2fe;"></span> Source IP</div>
+                <div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span> Identity</div>
+                <div class="legend-item"><span class="legend-dot" style="background:#a855f7;"></span> Session</div>
+                <div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span> Resource</div>
+                <div class="legend-item"><span class="legend-dot" style="background:#ef4444;"></span> Threat Entity</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================================================================
+             VIEW 7: ENTITY ANALYSIS DEEP DIVE
+             ================================================================== -->
+        <section class="view-section" id="view-entity-analysis">
+          <div class="glass-panel" style="padding:22px;">
+            <div class="table-controls-bar">
+              <div class="card-title"><span>🎯</span> Security Entity Deep Threat Analysis</div>
+              <div class="search-input-wrap" style="width:320px;">
+                <input type="text" id="entitySearchInput" class="search-input" placeholder="Enter username or IP (e.g. john123, 192.0.2.10)..." value="192.0.2.10">
+              </div>
+              <button id="btnSearchEntity" class="btn-header">Analyze Entity ➔</button>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 2fr; gap:18px; margin-top:16px;">
+              <div class="glass-panel" style="padding:18px; background:rgba(7,11,19,0.85);">
+                <div style="font-size:11px; color:#64748b; font-weight:700;">TARGET ENTITY:</div>
+                <h3 id="entTargetName" style="font-family:'JetBrains Mono'; font-size:18px; color:var(--cyan-primary); margin-bottom:12px;">192.0.2.10</h3>
+                <div style="display:flex; flex-direction:column; gap:8px; font-size:12px;">
+                  <div>Total Attempts: <b id="entTotalAttempts" style="color:#fff;">0</b></div>
+                  <div>Successful: <b id="entSuccessCount" style="color:#10b981;">0</b></div>
+                  <div>Failures: <b id="entFailedCount" style="color:#f87171;">0</b></div>
+                  <div>Unknown Accounts: <b id="entUnknownCount" style="color:#38bdf8;">0</b></div>
+                  <div>Risk Incidents: <b id="entRiskEvents" style="color:#ef4444;">0</b></div>
+                  <div>First Observed: <span id="entFirstSeen" style="font-family:'JetBrains Mono'; color:#cbd5e1;">--</span></div>
+                  <div>Last Observed: <span id="entLastSeen" style="font-family:'JetBrains Mono'; color:#cbd5e1;">--</span></div>
+                  <div>Related Apps: <span id="entRelatedApps" style="color:#fff;">--</span></div>
+                  <div>Related IPs: <span id="entRelatedIps" style="color:#fff;">--</span></div>
+                </div>
+
+                <div style="margin-top:16px; padding-top:12px; border-top:1px solid var(--border-glass); text-align:center;">
+                  <div style="font-size:11px; color:#94a3b8; margin-bottom:4px;">CALCULATED RISK SCORE:</div>
+                  <div id="entScoreVal" style="font-family:'JetBrains Mono'; font-size:24px; font-weight:800; color:#ef4444;">88/100</div>
+                </div>
+              </div>
+
+              <!-- History Table -->
+              <div class="glass-panel" style="padding:18px; background:rgba(7,11,19,0.85);">
+                <div class="card-title" style="font-size:13px; margin-bottom:10px;">Recent Activity History</div>
+                <div class="table-responsive">
+                  <table class="soc-table">
+                    <thead>
+                      <tr>
+                        <th>TIME</th>
+                        <th>APP</th>
+                        <th>USERNAME</th>
+                        <th>RESULT</th>
+                        <th>ORIGIN IP</th>
+                        <th>RISK</th>
+                      </tr>
+                    </thead>
+                    <tbody id="entityHistoryTableBody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================================================================
+             VIEW 8: STATISTICAL LAB
+             ================================================================== -->
+        <section class="view-section" id="view-statistical">
+          <div class="glass-panel" style="padding:22px;">
+            <div class="table-controls-bar">
+              <div class="card-title"><span>📈</span> Python Statistical Anomaly Detection (Z-Scores)</div>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <span style="font-size:11.5px; color:#94a3b8;">Z-THRESHOLD (|z| &ge;):</span>
+                <input type="range" id="statThresholdSlider" min="1.5" max="3.5" step="0.1" value="2.2" style="accent-color:var(--cyan-primary);">
+                <b id="statThresholdValue" style="font-family:'JetBrains Mono'; color:var(--cyan-primary);">2.2</b>
+              </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px; margin:16px 0;">
+              <div class="glass-panel" style="padding:14px; background:#070b13;">
+                <div style="font-size:11px; color:#64748b; font-weight:700;">FAILED LOGINS PER IP BASELINE:</div>
+                <div style="font-size:13px; color:#fff; margin-top:4px;">
+                  Mean (μ) = <b id="baseFailsMean" style="color:#38bdf8;">--</b> |
+                  Median = <b id="baseFailsMedian" style="color:#fff;">--</b> |
+                  StdDev (σ) = <b id="baseFailsStd" style="color:#f59e0b;">--</b>
+                </div>
+              </div>
+
+              <div class="glass-panel" style="padding:14px; background:#070b13;">
+                <div style="font-size:11px; color:#64748b; font-weight:700;">REQUESTS PER USER BASELINE:</div>
+                <div style="font-size:13px; color:#fff; margin-top:4px;">
+                  Mean (μ) = <b id="baseReqsMean" style="color:#38bdf8;">--</b> |
+                  Median = <b id="baseReqsMedian" style="color:#fff;">--</b> |
+                  StdDev (σ) = <b id="baseReqsStd" style="color:#f59e0b;">--</b>
+                </div>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="soc-table">
+                <thead>
+                  <tr>
+                    <th>DIMENSION</th>
+                    <th>ENTITY</th>
+                    <th>OBSERVED</th>
+                    <th>BASELINE (μ, σ)</th>
+                    <th>Z-SCORE</th>
+                    <th>SEVERITY</th>
+                    <th>STATISTICAL DERIVATION</th>
+                  </tr>
+                </thead>
+                <tbody id="statisticalAnomaliesTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================================================================
+             VIEW 9: RISK ENGINE RULES
+             ================================================================== -->
+        <section class="view-section" id="view-rules">
+          <div class="glass-panel" style="padding:22px;">
+            <div class="table-controls-bar">
+              <div class="card-title"><span>⚙️</span> Configurable Risk Engine &amp; Heuristic Rules</div>
+            </div>
+            <p style="font-size:12px; color:#94a3b8; margin-bottom:18px;">
+              Tune the mathematical penalty weights dynamically. All live authentication events recalculate instantly based on these signal coefficients.
+            </p>
+            <div id="rulesListContainer"></div>
+          </div>
+        </section>
+
+        <!-- ==================================================================
+             VIEW 10: CONNECTED APPLICATIONS
+             ================================================================== -->
+        <section class="view-section" id="view-applications">
+          <div class="glass-panel table-card">
+            <div class="table-controls-bar">
+              <div class="card-title"><span>🏢</span> Connected Applications Registry</div>
+              <button onclick="switchView('integration')" class="btn-header">+ Register New Application</button>
+            </div>
+            <div class="table-responsive">
+              <table class="soc-table">
+                <thead>
+                  <tr>
+                    <th>APP ID</th>
+                    <th>APPLICATION NAME</th>
+                    <th>APPLICATION URL</th>
+                    <th>TYPE</th>
+                    <th>ENV</th>
+                    <th>API KEY</th>
+                    <th>TOTAL EVENTS</th>
+                    <th>CREDENTIALS</th>
+                  </tr>
+                </thead>
+                <tbody id="connectedAppsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================================================================
+             VIEW 11: CONNECT YOUR APPLICATION (INTEGRATION WORKBENCH)
+             ================================================================== -->
+        <section class="view-section" id="view-integration">
+          <div style="display:grid; grid-template-columns: 1.1fr 1fr; gap:20px;">
+            <!-- Registration Form -->
+            <div class="glass-panel" style="padding:24px;">
+              <div class="card-title" style="margin-bottom:12px;"><span>🔌</span> Connect Your Application</div>
+
+              <div class="security-policy-disclaimer" style="margin-bottom:18px;">
+                <span>🛡️</span>
+                <span><b>DO NOT PROVIDE ADMIN PASSWORDS:</b> CyberTrace does not need your website admin credentials. Your website verifies passwords; CyberTrace receives security event metadata only.</span>
+              </div>
+
+              <form id="registerAppForm">
+                <div class="form-field">
+                  <label for="regAppName">APPLICATION NAME</label>
+                  <input type="text" id="regAppName" class="search-input" placeholder="e.g. Apex University Portal" required>
+                </div>
+
+                <div class="form-field">
+                  <label for="regAppUrl">APPLICATION BASE URL</label>
+                  <input type="url" id="regAppUrl" class="search-input" placeholder="https://portal.apex.edu" required>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                  <div class="form-field">
+                    <label for="regAppType">APPLICATION TYPE</label>
+                    <select id="regAppType" class="app-select" style="width:100%;">
+                      <option value="Portal">Portal</option>
+                      <option value="Web Application">Web Application</option>
+                      <option value="Website">Website</option>
+                      <option value="Mobile Application">Mobile Application</option>
+                      <option value="API">API</option>
+                    </select>
+                  </div>
+                  <div class="form-field">
+                    <label for="regAppEnv">ENVIRONMENT</label>
+                    <select id="regAppEnv" class="app-select" style="width:100%;">
+                      <option value="Production">Production</option>
+                      <option value="Staging">Staging</option>
+                      <option value="Development">Development</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-field">
+                  <label for="regAppEmail">OWNER / SECURITY CONTACT EMAIL</label>
+                  <input type="email" id="regAppEmail" class="search-input" placeholder="security@apex.edu" required>
+                </div>
+
+                <button type="submit" class="btn-login-submit" style="margin-top:12px;">
+                  REGISTER APPLICATION &amp; GENERATE API CREDENTIALS ➔
+                </button>
+              </form>
+
+              <!-- 5-Step Integration Walkthrough -->
+              <div style="margin-top:28px; border-top:1px solid var(--border-glass); padding-top:18px;">
+                <div style="font-family:var(--font-display); font-size:13px; font-weight:700; color:#fff; margin-bottom:12px;">5-STEP INTEGRATION PROCESS:</div>
+                <div style="display:flex; flex-direction:column; gap:8px; font-size:12px; color:#cbd5e1;">
+                  <div><b>STEP 1:</b> Register application details above</div>
+                  <div><b>STEP 2:</b> Generate API Key and Secret</div>
+                  <div><b>STEP 3:</b> Store credentials in backend environment variables</div>
+                  <div><b>STEP 4:</b> Send authentication events to <code>POST /api/v1/auth-events</code></div>
+                  <div><b>STEP 5:</b> Monitor security telemetry and alerts in CyberTrace</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Code Integration Snippets & Live API Tester -->
+            <div class="glass-panel" style="padding:24px; display:flex; flex-direction:column;">
+              <div class="card-title" style="margin-bottom:12px;"><span>💻</span> Backend Integration Snippet</div>
+
+              <div class="tab-nav">
+                <button class="tab-btn active" data-lang="nodejs">Node.js</button>
+                <button class="tab-btn" data-lang="python">Python</button>
+                <button class="tab-btn" data-lang="java">Java</button>
+                <button class="tab-btn" data-lang="curl">cURL</button>
+              </div>
+
+              <pre class="code-block-box" id="integrationSnippetCode" style="height:230px; margin-bottom:18px;"></pre>
+
+              <!-- Live Interactive Event Tester -->
+              <div style="border-top:1px solid var(--border-glass); padding-top:16px;">
+                <div class="card-title" style="font-size:13px; margin-bottom:8px;"><span>🧪</span> Live API Event Tester</div>
+                <p style="font-size:11.5px; color:#94a3b8; margin-bottom:10px;">
+                  Test sending authentication metadata directly to <code>POST /api/v1/auth-events</code>:
+                </p>
+                <div style="display:flex; gap:10px; margin-bottom:10px;">
+                  <button id="btnTestEventSafe" class="demo-btn demo-btn-safe">Send Safe Login Metadata</button>
+                  <button id="btnTestEventReject" class="demo-btn demo-btn-critical" title="Tests password rejection policy">
+                    Inject Password (Test Security Rejection)
+                  </button>
+                </div>
+                <pre class="code-block-box" id="apiTesterOutput" style="height:120px; font-size:11px; color:#34d399;">Ready to transmit test telemetry...</pre>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================================================================
+             VIEW 12: DEMO CENTER & SETTINGS (Dedicated Hub)
+             ================================================================== -->
+        <section class="view-section" id="view-demo-center">
+          <div style="display:grid; grid-template-columns: 1.2fr 1fr; gap:20px;">
+            <div class="glass-panel" style="padding:24px;">
+              <div class="card-title" style="margin-bottom:14px;"><span>🎮</span> Demonstration Attack &amp; Scenario Simulator</div>
+              <p style="font-size:12px; color:#94a3b8; margin-bottom:16px;">
+                Trigger realistic authentication patterns. Each scenario flows through the centralized risk engine and immediately updates all KPIs, tables, graphs, and alert triages.
+              </p>
+
+              <div style="display:flex; flex-direction:column; gap:10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; background:#070b13; padding:12px 16px; border-radius:8px;">
+                  <div>
+                    <b style="color:#34d399; font-size:13px;">1. Normal Safe Login</b>
+                    <div style="font-size:11.5px; color:#94a3b8;">john123 successful login from regular workstation.</div>
+                  </div>
+                  <button onclick="SimulatorModule.run('SAFE_LOGIN')" class="demo-btn demo-btn-safe">Simulate Safe</button>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; background:#070b13; padding:12px 16px; border-radius:8px;">
+                  <div>
+                    <b style="color:#fbbf24; font-size:13px;">2. Single Wrong Password</b>
+                    <div style="font-size:11.5px; color:#94a3b8;">john123 typo error (Risk 15/100, MONITORING, No Alert).</div>
+                  </div>
+                  <button onclick="SimulatorModule.run('WRONG_PASSWORD')" class="demo-btn demo-btn-wrong">Simulate Failure</button>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; background:#070b13; padding:12px 16px; border-radius:8px;">
+                  <div>
+                    <b style="color:#38bdf8; font-size:13px;">3. Unknown Account Name</b>
+                    <div style="font-size:11.5px; color:#94a3b8;">Single attempt with fake_admin_123 identifier.</div>
+                  </div>
+                  <button onclick="SimulatorModule.run('UNKNOWN_USER')" class="demo-btn demo-btn-unknown">Simulate Unknown</button>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; background:#070b13; padding:12px 16px; border-radius:8px;">
+                  <div>
+                    <b style="color:#fb923c; font-size:13px;">4. Repeated Failures Burst</b>
+                    <div style="font-size:11.5px; color:#94a3b8;">5 rapid failed attempts from 198.51.100.42 (Score 65/100, HIGH ALERT).</div>
+                  </div>
+                  <button onclick="SimulatorModule.run('REPEATED_FAILURES')" class="demo-btn demo-btn-burst">Simulate Burst</button>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; background:#070b13; padding:12px 16px; border-radius:8px;">
+                  <div>
+                    <b style="color:#f87171; font-size:13px;">5. Account Enumeration Attack</b>
+                    <div style="font-size:11.5px; color:#94a3b8;">7 probed usernames: admin, root, superadmin... (Score 88/100, CRITICAL).</div>
+                  </div>
+                  <button onclick="SimulatorModule.run('MULTIPLE_USERNAMES')" class="demo-btn demo-btn-critical">Simulate Enum</button>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; background:#070b13; padding:12px 16px; border-radius:8px;">
+                  <div>
+                    <b style="color:#f87171; font-size:13px;">6. High Request Velocity Spike</b>
+                    <div style="font-size:11.5px; color:#94a3b8;">20 rapid automated requests in <1 min (Velocity Spike, CRITICAL).</div>
+                  </div>
+                  <button onclick="SimulatorModule.run('HIGH_FREQUENCY')" class="demo-btn demo-btn-critical">Simulate Velocity</button>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; background:#070b13; padding:12px 16px; border-radius:8px;">
+                  <div>
+                    <b style="color:#f87171; font-size:13px;">7. Account Takeover After Failures</b>
+                    <div style="font-size:11.5px; color:#94a3b8;">4 consecutive failures followed by SUCCESS on /finance endpoint.</div>
+                  </div>
+                  <button onclick="SimulatorModule.run('TAKEOVER_AFTER_FAILS')" class="demo-btn demo-btn-critical">Simulate Takeover</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Demo Persistence & System Reset Controls -->
+            <div class="glass-panel" style="padding:24px;">
+              <div class="card-title" style="margin-bottom:14px;"><span>⚙️</span> Persistence &amp; Stream Settings</div>
+
+              <div style="background:#070b13; padding:16px; border-radius:8px; margin-bottom:18px;">
+                <div style="font-size:12px; font-weight:700; color:#fff; margin-bottom:6px;">LIVE TELEMETRY STREAMER:</div>
+                <p style="font-size:11.5px; color:#94a3b8; margin-bottom:12px;">
+                  Generates realistic mixed authentication events continuously every 3.5s.
+                </p>
+                <div style="display:flex; gap:10px;">
+                  <button id="btnToggleLiveSim" class="btn-header" style="background:#10b981; color:#070b13; font-weight:700;">
+                    Toggle Live Simulation
+                  </button>
+                </div>
+              </div>
+
+              <div style="background:#070b13; padding:16px; border-radius:8px; margin-bottom:18px;">
+                <div style="font-size:12px; font-weight:700; color:#fff; margin-bottom:6px;">DEMO DATA PERSISTENCE:</div>
+                <p style="font-size:11.5px; color:#94a3b8; margin-bottom:12px;">
+                  All recorded events, alerts, and metrics persist across browser reloads via <code>sentinel_auth_events</code> in LocalStorage.
+                </p>
+                <div style="display:flex; gap:10px;">
+                  <button onclick="SimulatorModule.clearDemoData()" class="btn-dismiss" style="border:1px solid #ef4444; color:#f87171;">
+                    🗑️ Clear Demo Data
+                  </button>
+                  <button onclick="SimulatorModule.resetDemoData()" class="btn-header">
+                    ↺ Reset to Seed Baseline
+                  </button>
+                </div>
+              </div>
+
+              <div style="border-top:1px solid var(--border-glass); padding-top:14px; font-size:11.5px; color:#64748b;">
+                🛡️ <b>ARCHITECTURE NOTE:</b> CyberTrace receives authentication event metadata only. Under no circumstances are raw external passwords stored, processed, or logged.
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Scripts in strict dependency order -->
+  <script src="js/risk-engine.js"></script>
+  <script src="js/data-store.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/login.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/simulator.js"></script>
+  <script src="js/integration.js"></script>
+  <script src="js/alerts.js"></script>
+  <script src="js/investigation.js"></script>
+  <script src="js/source-analysis.js"></script>
+  <script src="js/entity-analysis.js"></script>
+  <script src="js/access-graph.js"></script>
+  <script src="js/rules.js"></script>
+  <script src="js/statistical.js"></script>
+
+</body>
+</html>

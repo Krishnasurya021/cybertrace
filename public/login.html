@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CyberTrace — 3D Security Operations Center Login</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+</head>
+<body style="display:flex; align-items:center; justify-content:center; height:100vh; background:#050811; overflow:hidden;">
+
+  <canvas id="loginCyberCanvas" class="cyber-canvas-bg"></canvas>
+
+  <div class="login-container-3d">
+    <!-- 3D Rotating Security Shield & Laser Scanner -->
+    <div class="shield-perspective-rig">
+      <div class="shield-3d-model">
+        <svg class="shield-svg-graphic" viewBox="0 0 100 120">
+          <defs>
+            <linearGradient id="shieldCyberGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#00f2fe" />
+              <stop offset="50%" stop-color="#3b82f6" />
+              <stop offset="100%" stop-color="#0f172a" />
+            </linearGradient>
+          </defs>
+          <path d="M 50 10 Q 75 10 88 25 Q 90 70 50 110 Q 10 70 12 25 Q 25 10 50 10 Z" fill="url(#shieldCyberGrad)" stroke="#00f2fe" stroke-width="1.5"/>
+          <path d="M 50 20 Q 70 20 80 32 Q 82 68 50 100 Q 18 68 20 32 Q 30 20 50 20 Z" fill="none" stroke="rgba(0, 242, 254, 0.4)" stroke-width="1.5"/>
+          <circle cx="50" cy="55" r="14" fill="none" stroke="#38bdf8" stroke-width="2" stroke-dasharray="4 2"/>
+          <path d="M 44 55 L 48 59 L 57 48" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="scanning-laser-beam"></div>
+    </div>
+
+    <!-- Login Form Card -->
+    <div class="login-glass-box">
+      <div class="login-brand-head">
+        <h2>CyberTrace</h2>
+        <p>UNIVERSAL AUTHENTICATION SECURITY PLATFORM</p>
+      </div>
+
+      <div class="security-policy-disclaimer">
+        <span>🛡️</span>
+        <span><b>SECURITY NOTE:</b> This console is for CyberTrace SOC analysts only. CyberTrace does NOT authenticate external website users or store third-party passwords.</span>
+      </div>
+
+      <form id="sentinelLoginForm">
+        <div class="form-field">
+          <label for="loginUsername">ANALYST IDENTITY / USERNAME</label>
+          <div class="input-with-icon">
+            <span class="field-icon">👤</span>
+            <input type="text" id="loginUsername" value="analyst" required autocomplete="off">
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label for="loginKey">SECURITY PASSKEY / TOKEN</label>
+          <div class="input-with-icon">
+            <span class="field-icon">🔒</span>
+            <input type="password" id="loginKey" value="••••••••" required>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-login-submit" id="btnLoginSubmit">
+          INITIALIZE SECURITY CENTER ➔
+        </button>
+      </form>
+
+      <div class="login-stage-progress" id="loginProgressStatus"></div>
+
+      <div style="text-align:center; margin-top:14px;">
+        <a href="dashboard.html" style="color:var(--text-muted); font-size:11.5px; text-decoration:underline;">
+          Direct Access to SOC Dashboard ➔
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script src="js/login.js"></script>
+  <script>
+    document.getElementById('sentinelLoginForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const statusEl = document.getElementById('loginProgressStatus');
+      const stages = [
+        { text: "AUTHENTICATING IDENTITY...", delay: 300 },
+        { text: "VERIFYING CRYPTOGRAPHIC SESSION...", delay: 700 },
+        { text: "LOADING SECURITY OPERATIONS CENTER...", delay: 1100 },
+        { text: "INITIALIZING ACCESS LOG MONITOR...", delay: 1500 },
+        { text: "SECURITY CENTER READY ✓", delay: 1900 }
+      ];
+      stages.forEach(s => setTimeout(() => statusEl.textContent = s.text, s.delay));
+      setTimeout(() => { window.location.href = 'dashboard.html'; }, 2200);
+    });
+  </script>
+</body>
+</html>
