@@ -1,14 +1,14 @@
-# SENTINEL — Universal Authentication Security & Access Log Monitoring Platform
+# CyberTrace — Universal Authentication Security & Access Log Monitoring Platform
 
-![SENTINEL SOC Banner](https://img.shields.io/badge/Security-Universal%20SOC%20Platform-00f2fe?style=for-the-badge)
+![CyberTrace SOC Banner](https://img.shields.io/badge/Security-Universal%20SOC%20Platform-00f2fe?style=for-the-badge)
 ![Zero Password](https://img.shields.io/badge/Privacy-Zero%20Password%20Architecture-10b981?style=for-the-badge)
 ![Python](https://img.shields.io/badge/Runtime-Python%203.9+-3b82f6?style=for-the-badge)
 ![Java](https://img.shields.io/badge/OOPJ-Java%20%2B%20Spring%20Boot-f59e0b?style=for-the-badge)
 ![DBMS](https://img.shields.io/badge/DBMS-MySQL%20%2F%20SQLite%203NF-ef4444?style=for-the-badge)
 
-**SENTINEL** is a commercial-grade, real-world oriented Cybersecurity Security Operations Center (SOC) platform designed to allow **any external website, portal, or web application** to securely connect its authentication system without sharing administrative passwords. 
+**CyberTrace** is an intelligent cybersecurity solution designed to identify, analyze, and visualize potential cyber threats using automated threat analysis and AI-driven security insights. It is a commercial-grade, real-world oriented Cybersecurity Security Operations Center (SOC) platform designed to allow **any external website, portal, or web application** to securely connect its authentication system without sharing administrative passwords. 
 
-SENTINEL ingests authentication **event metadata only**, analyzes behavioral patterns, computes multi-signal risk scores, detects brute-force attacks and account enumeration, and provides visual telemetry, live incident alerts, an interactive investigation workbench, and an ADSA 5-tier access graph.
+CyberTrace ingests authentication **event metadata only**, analyzes behavioral patterns, computes multi-signal risk scores, detects brute-force attacks and account enumeration, and provides visual telemetry, live incident alerts, an interactive investigation workbench, and an ADSA 5-tier access graph.
 
 ---
 
